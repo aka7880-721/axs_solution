@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AXS Natural Language Analytics | Demo</title>
+  <style>
+    :root {
+      --bg: #eef1f6;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #4f46e5;
+      --accent-2: #6366f1;
+      --accent-soft: #eef2ff;
+      --ok: #16a34a;
+      --err: #dc2626;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+      --header-h: 72px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.12), transparent),
+        linear-gradient(180deg, #e8ecf4 0%, var(--bg) 40%);
+    }
+
+    .topbar {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+      color: #fff;
+      padding: 0 24px;
+      min-height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 2px 12px rgba(30, 27, 75, 0.35);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 0.82rem;
+      opacity: 0.85;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+
+    .pill.online::before { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+    .pill.offline::before { background: #f87171; }
+
+    .pipeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      padding: 14px 24px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pipeline span {
+      padding: 4px 10px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .pipeline .arrow { border: none; background: none; padding: 0 2px; }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 24px 32px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+      gap: 20px;
+      align-items: stretch;
+      min-height: calc(100vh - var(--header-h) - 120px);
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; min-height: auto; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .panel-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+      color: var(--muted);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 108px;
+      padding: 12px 14px;
+      font: inherit;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      resize: vertical;
+      background: var(--surface-2);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      background: #fff;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      font: inherit;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.15s;
+    }
+
+    .btn:active:not(:disabled) { transform: scale(0.98); }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.45);
+    }
+
+    .kbd-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    kbd {
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface-2);
+    }
+
+    .example-groups {
+      margin-top: 18px;
+      flex: 1;
+      overflow-y: auto;
+      max-height: min(520px, 55vh);
+      padding-right: 4px;
+    }
+
+    .example-group { margin-bottom: 14px; }
+
+    .example-group h3 {
+      margin: 0 0 8px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .chip {
+      font-size: 0.84rem;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent-2);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    #empty-state[hidden] {
+      display: none !important;
+    }
+
+    .examples-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 0 0 8px;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--muted);
+      padding: 48px 24px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      background: var(--surface-2);
+    }
+
+    .empty-state .icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .answer-lead {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin: 0 0 16px;
+    }
+
+    .answer-lead.loading {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 0.95rem;
+    }
+
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, var(--accent-soft) 0%, #fff 100%);
+      border: 1px solid #c7d2fe;
+    }
+
+    .stat-card .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .stat-card .value {
+      margin-top: 4px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .stat-card.wide { grid-column: 1 / -1; }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .meta-tag {
+      padding: 4px 10px;
+      background: var(--surface-2);
+      border-radius: 6px;
+    }
+
+    .banner {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: var(--err);
+    }
+
+    details.tech {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    details.tech summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--muted);
+      user-select: none;
+      list-style: none;
+    }
+
+    details.tech summary::-webkit-details-marker { display: none; }
+
+    details.tech summary::before {
+      content: "▸ ";
+      display: inline-block;
+      transition: transform 0.15s;
+    }
+
+    details.tech[open] summary::before { transform: rotate(90deg); }
+
+    .tech-block { margin-top: 12px; }
+
+    .tech-block h4 {
+      margin: 0 0 6px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    pre, .sql-block {
+      margin: 0;
+      padding: 12px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .copy-row { display: flex; justify-content: flex-end; margin-top: 6px; }
+
+    .btn-sm { font-size: 0.78rem; padding: 5px 10px; border-radius: 6px; }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 220px;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+
+    th, td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface-2);
+      position: sticky;
+      top: 0;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+    }
+
+    .row-count { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+
+    #result-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1><a href="/" style="color:inherit;text-decoration:none;">AXS</a> · Natural Language Analytics</h1>
+      <p>Schema → SQL → Database → Natural language answer &nbsp;|&nbsp; <a href="/solutions.html" style="color:#c7d2fe;">Solutions</a> · <a href="/" style="color:#c7d2fe;">Website home</a></p>
+    </div>
+    <div class="status-bar">
+      <span class="pill" id="status-pill">Checking...</span>
+      <span id="status-version"></span>
+    </div>
+  </header>
+
+  <nav class="pipeline" aria-label="Pipeline">
+    <span>1 Schema agent</span>
+    <span class="arrow">→</span>
+    <span>2 SQL agent</span>
+    <span class="arrow">→</span>
+    <span>3 Retriever</span>
+    <span class="arrow">→</span>
+    <span>4 Synthesizer</span>
+  </nav>
+
+  <div class="app">
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" aria-hidden="true">?</div>
+          <h2>Ask a question</h2>
+        </div>
+        <label for="question">Natural language query</label>
+        <textarea
+          id="question"
+          placeholder="Example: Employee with highest sales"
+        ></textarea>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btn-ask">Run query</button>
+          <button type="button" class="btn" id="btn-clear">Clear</button>
+          <span class="kbd-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+        </div>
+        <p class="examples-hint">Example questions (scroll for more):</p>
+        <div class="example-groups" id="example-groups"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" aria-hidden="true">✓</div>
+          <h2>Results</h2>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="icon" aria-hidden="true">💬</div>
+          <p><strong>No query yet</strong></p>
+          <p>Choose an example or type a question about customers, employees, products, or sales.</p>
+        </div>
+
+        <div id="result-area" hidden>
+          <div id="highlight-grid" class="highlight-grid" hidden></div>
+          <p class="answer-lead" id="answer"></p>
+          <div class="meta-row">
+            <span class="meta-tag" id="meta-time"></span>
+            <span class="meta-tag" id="meta-rows"></span>
+          </div>
+          <div id="error-banner" class="banner" hidden></div>
+
+          <details class="tech" id="tech-details">
+            <summary>Technical details</summary>
+            <div class="tech-block">
+              <h4>Schema used</h4>
+              <pre id="schema"></pre>
+            </div>
+            <div class="tech-block">
+              <h4>Generated SQL</h4>
+              <pre class="sql-block" id="sql"></pre>
+              <div class="copy-row">
+                <button type="button" class="btn btn-sm" id="btn-copy-sql">Copy SQL</button>
+              </div>
+            </div>
+            <div class="tech-block">
+              <h4>All rows</h4>
+              <div class="row-count" id="row-count"></div>
+              <div id="rows-table"></div>
+              <pre id="rows-json" hidden></pre>
+            </div>
+          </details>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const MONEY_KEYS = new Set(["total_sales", "total_revenue", "avg_sale", "sale_amount", "price"]);
+
+    const els = {
+      question: document.getElementById("question"),
+      btnAsk: document.getElementById("btn-ask"),
+      btnClear: document.getElementById("btn-clear"),
+      btnCopySql: document.getElementById("btn-copy-sql"),
+      emptyState: document.getElementById("empty-state"),
+      resultArea: document.getElementById("result-area"),
+      highlightGrid: document.getElementById("highlight-grid"),
+      answer: document.getElementById("answer"),
+      schema: document.getElementById("schema"),
+      sql: document.getElementById("sql"),
+      rowsTable: document.getElementById("rows-table"),
+      rowsJson: document.getElementById("rows-json"),
+      rowCount: document.getElementById("row-count"),
+      errorBanner: document.getElementById("error-banner"),
+      metaTime: document.getElementById("meta-time"),
+      metaRows: document.getElementById("meta-rows"),
+      statusPill: document.getElementById("status-pill"),
+      statusVersion: document.getElementById("status-version"),
+      exampleGroups: document.getElementById("example-groups"),
+      techDetails: document.getElementById("tech-details"),
+    };
+
+    let lastSql = "";
+
+    function labelize(key) {
+      return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    function formatValue(key, val) {
+      if (val === null || val === undefined) return "-";
+      if (MONEY_KEYS.has(key)) {
+        const n = Number(val);
+        if (!Number.isNaN(n)) return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      return String(val);
+    }
+
+    function renderHighlight(rows) {
+      els.highlightGrid.innerHTML = "";
+      if (!Array.isArray(rows) || rows.length === 0 || typeof rows[0] !== "object") {
+        els.highlightGrid.hidden = true;
+        return;
+      }
+
+      const row = rows[0];
+      const keys = Object.keys(row);
+      els.highlightGrid.hidden = false;
+
+      for (const key of keys) {
+        const card = document.createElement("div");
+        card.className = "stat-card";
+        if (key === "name" || keys.length <= 3) card.classList.add("wide");
+        card.innerHTML =
+          '<div class="label">' + labelize(key) + '</div>' +
+          '<div class="value">' + formatValue(key, row[key]) + '</div>';
+        els.highlightGrid.appendChild(card);
+      }
+
+      if (rows.length > 1) {
+        const note = document.createElement("div");
+        note.className = "stat-card wide";
+        note.innerHTML = '<div class="label">More results</div><div class="value">+' + (rows.length - 1) + " additional row(s) in table below</div>";
+        els.highlightGrid.appendChild(note);
+      }
+    }
+
+    function renderExampleGroups(groups) {
+      els.exampleGroups.innerHTML = "";
+      for (const group of groups) {
+        const wrap = document.createElement("div");
+        wrap.className = "example-group";
+        wrap.innerHTML = "<h3>" + group.title + "</h3>";
+        const chips = document.createElement("div");
+        chips.className = "chips";
+        for (const text of group.items) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "chip";
+          b.textContent = text;
+          b.addEventListener("click", () => {
+            els.question.value = text;
+            ask();
+          });
+          chips.appendChild(b);
+        }
+        wrap.appendChild(chips);
+        els.exampleGroups.appendChild(wrap);
+      }
+    }
+
+    async function fetchExamplePayload(url) {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) return null;
+      const ct = (res.headers.get("content-type") || "").toLowerCase();
+      if (!ct.includes("json")) return null;
+      const data = await res.json();
+      if (!data.groups || !data.groups.length) return null;
+      return data;
+    }
+
+    async function loadExamples() {
+      const y = new Date().getFullYear();
+      const hint = document.querySelector(".examples-hint");
+      els.question.placeholder = "Example: What is the total sales this year? (" + y + ")";
+
+      for (const url of ["/examples", "/examples.json"]) {
+        try {
+          const data = await fetchExamplePayload(url);
+          if (data) {
+            renderExampleGroups(data.groups);
+            if (hint) {
+              hint.textContent = "Example questions (" + data.groups.length + " groups, scroll for more):";
+            }
+            return;
+          }
+        } catch (_) {}
+      }
+
+      if (hint) {
+        hint.textContent = "Could not load examples from server. Restart run.bat, then refresh (Ctrl+F5).";
+        hint.style.color = "#b45309";
+      }
+      renderExampleGroups([
+        { title: "Current", items: ["What is the total sales this year?", "Count of sales in " + y] },
+        { title: "Help", items: ["tell me about this app"] },
+      ]);
+    }
+
+    async function checkHealth() {
+      try {
+        const res = await fetch("/health");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        els.statusPill.textContent = "API online";
+        els.statusPill.classList.add("online");
+        els.statusVersion.textContent = data.version ? "v" + data.version : "";
+      } catch {
+        els.statusPill.textContent = "API offline";
+        els.statusPill.classList.add("offline");
+      }
+    }
+
+    function renderRowsTable(rows) {
+      els.rowsTable.innerHTML = "";
+      els.rowsJson.hidden = true;
+      if (!Array.isArray(rows) || rows.length === 0) {
+        els.rowCount.textContent = "No rows.";
+        return;
+      }
+      els.rowCount.textContent = rows.length + " row(s)";
+      if (typeof rows[0] !== "object") {
+        els.rowsJson.hidden = false;
+        els.rowsJson.textContent = JSON.stringify(rows, null, 2);
+        return;
+      }
+      const keys = Object.keys(rows[0]);
+      const wrap = document.createElement("div");
+      wrap.className = "table-wrap";
+      const table = document.createElement("table");
+      const hr = document.createElement("tr");
+      keys.forEach((k) => {
+        const th = document.createElement("th");
+        th.textContent = labelize(k);
+        hr.appendChild(th);
+      });
+      table.appendChild(document.createElement("thead")).appendChild(hr);
+      const tbody = document.createElement("tbody");
+      const limit = Math.min(rows.length, 100);
+      for (let i = 0; i < limit; i++) {
+        const tr = document.createElement("tr");
+        keys.forEach((k) => {
+          const td = document.createElement("td");
+          td.textContent = formatValue(k, rows[i][k]);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      els.rowsTable.appendChild(wrap);
+    }
+
+    function setLoading(loading) {
+      els.btnAsk.disabled = loading;
+      els.btnAsk.textContent = loading ? "Running..." : "Run query";
+      els.answer.classList.toggle("loading", loading);
+      if (loading) {
+        els.answer.textContent = "Running pipeline and querying the database...";
+        els.highlightGrid.hidden = true;
+      }
+    }
+
+    async function ask() {
+      const question = els.question.value.trim();
+      if (!question) {
+        els.question.focus();
+        return;
+      }
+
+      els.emptyState.hidden = true;
+      els.resultArea.hidden = false;
+      els.errorBanner.hidden = true;
+      setLoading(true);
+      const started = performance.now();
+
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question }),
+        });
+        const data = await response.json();
+        const ms = Math.round(performance.now() - started);
+        const rows = data.steps?.result_rows;
+
+        renderHighlight(rows);
+        els.answer.textContent = data.answer || "";
+        els.schema.textContent = JSON.stringify(data.steps?.schema_used, null, 2);
+        lastSql = data.steps?.generated_sql || "";
+        els.sql.textContent = lastSql || "(none)";
+        renderRowsTable(rows);
+
+        const rowLen = Array.isArray(rows) ? rows.length : 0;
+        els.metaTime.textContent = ms + " ms";
+        els.metaRows.textContent = rowLen ? rowLen + " rows" : "No rows";
+
+        if (data.error) {
+          els.errorBanner.hidden = false;
+          els.errorBanner.textContent = data.error;
+        }
+
+        els.techDetails.open = !lastSql;
+      } catch (err) {
+        els.answer.textContent = "Could not reach the server.";
+        els.errorBanner.hidden = false;
+        els.errorBanner.textContent = String(err);
+        els.highlightGrid.hidden = true;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    els.btnAsk.addEventListener("click", ask);
+    els.btnClear.addEventListener("click", () => {
+      els.question.value = "";
+      els.question.focus();
+    });
+    els.btnCopySql.addEventListener("click", async () => {
+      if (!lastSql) return;
+      try {
+        await navigator.clipboard.writeText(lastSql);
+        els.btnCopySql.textContent = "Copied!";
+        setTimeout(() => { els.btnCopySql.textContent = "Copy SQL"; }, 1500);
+      } catch {
+        els.btnCopySql.textContent = "Failed";
+      }
+    });
+    els.question.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        ask();
+      }
+    });
+
+    loadExamples();
+    checkHealth();
+  </script>
+</body>
+</html>

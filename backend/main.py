@@ -46,7 +46,7 @@ def sync_examples_json() -> None:
         "groups": build_example_groups(),
         "examples": flat_examples(),
     }
-    (FRONTEND_DIR / "examples.json").write_text(
+    (FRONTEND_DIR / "demo" / "examples.json").write_text(
         json.dumps(payload, indent=2),
         encoding="utf-8",
     )
