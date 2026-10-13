@@ -1,0 +1,104 @@
+{
+  "current_year": 2026,
+  "groups": [
+    {
+      "title": "Lists",
+      "items": [
+        "List all customers",
+        "List all employees",
+        "List all products",
+        "Show all customers"
+      ]
+    },
+    {
+      "title": "Customer filters",
+      "items": [
+        "Customers from Mumbai",
+        "Customers from Delhi",
+        "Customers from Bangalore",
+        "Customers from Chennai"
+      ]
+    },
+    {
+      "title": "Product & employee filters",
+      "items": [
+        "Products above 50000",
+        "Products above 100000",
+        "Employees in Sales department",
+        "Employees in Tech department",
+        "Employees in Support department"
+      ]
+    },
+    {
+      "title": "This year (2026)",
+      "items": [
+        "What is the total sales this year?",
+        "Count of sales in 2026",
+        "How many sales in 2026",
+        "Average sale amount in 2026",
+        "Sales in Q4 2026",
+        "Sales this year",
+        "Employee with highest sales this year",
+        "Product with highest revenue this year"
+      ]
+    },
+    {
+      "title": "Last year (2025)",
+      "items": [
+        "What is the total sales last year?",
+        "Sales last year",
+        "Count of sales in 2025",
+        "Average sale amount in 2025",
+        "Sales in Q3 2026"
+      ]
+    },
+    {
+      "title": "Rankings & joins",
+      "items": [
+        "Employee with highest sales",
+        "Product with highest revenue",
+        "Sales with customer names",
+        "Show sales with customers"
+      ]
+    },
+    {
+      "title": "Help",
+      "items": [
+        "tell me about this app"
+      ]
+    }
+  ],
+  "examples": [
+    "List all customers",
+    "List all employees",
+    "List all products",
+    "Show all customers",
+    "Customers from Mumbai",
+    "Customers from Delhi",
+    "Customers from Bangalore",
+    "Customers from Chennai",
+    "Products above 50000",
+    "Products above 100000",
+    "Employees in Sales department",
+    "Employees in Tech department",
+    "Employees in Support department",
+    "What is the total sales this year?",
+    "Count of sales in 2026",
+    "How many sales in 2026",
+    "Average sale amount in 2026",
+    "Sales in Q4 2026",
+    "Sales this year",
+    "Employee with highest sales this year",
+    "Product with highest revenue this year",
+    "What is the total sales last year?",
+    "Sales last year",
+    "Count of sales in 2025",
+    "Average sale amount in 2025",
+    "Sales in Q3 2026",
+    "Employee with highest sales",
+    "Product with highest revenue",
+    "Sales with customer names",
+    "Show sales with customers",
+    "tell me about this app"
+  ]
+}
