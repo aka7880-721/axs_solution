@@ -464,6 +464,34 @@
       display: flex;
       flex-direction: column;
     }
+
+    .api-log-panel {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-2);
+      font-size: 0.78rem;
+    }
+
+    .api-log-panel h4 {
+      margin: 0 0 6px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    #api-log {
+      margin: 0;
+      padding-left: 1.1rem;
+      max-height: 100px;
+      overflow-y: auto;
+      color: var(--muted);
+    }
+
+    #api-log li.ok { color: var(--ok); }
+    #api-log li.err { color: var(--err); }
   </style>
 </head>
 <body>
@@ -507,6 +535,13 @@
         </div>
         <p class="examples-hint">Example questions (scroll for more):</p>
         <div class="example-groups" id="example-groups"></div>
+        <div class="api-log-panel">
+          <h4>API activity (same server as this page)</h4>
+          <ul id="api-log"></ul>
+          <p style="margin:6px 0 0;font-size:0.72rem;color:var(--muted);">
+            DevTools → Network: look for <code>/health</code>, <code>/examples</code>, <code>/ask</code>
+          </p>
+        </div>
       </section>
 
       <section class="panel">
@@ -556,7 +591,36 @@
   </div>
 
   <script>
+    if (window.location.protocol === "file:") {
+      document.body.insertAdjacentHTML(
+        "afterbegin",
+        '<div style="background:#b91c1c;color:#fff;padding:12px;text-align:center;">' +
+          "Open via run.bat: <a href=\"http://127.0.0.1:8000/demo/\" style=\"color:#fff;\">http://127.0.0.1:8000/demo/</a> — " +
+          "file:// pages cannot call the API.</div>"
+      );
+    }
+
     const MONEY_KEYS = new Set(["total_sales", "total_revenue", "avg_sale", "sale_amount", "price"]);
+
+    function logApi(method, path, status, ms) {
+      const ul = document.getElementById("api-log");
+      if (!ul) return;
+      const li = document.createElement("li");
+      const ok = status >= 200 && status < 300;
+      li.className = ok ? "ok" : "err";
+      li.textContent =
+        method + " " + path + " → " + status + (ms != null ? " (" + ms + " ms)" : "");
+      ul.insertBefore(li, ul.firstChild);
+      while (ul.children.length > 12) ul.removeChild(ul.lastChild);
+    }
+
+    async function apiFetch(path, options) {
+      const method = (options && options.method) || "GET";
+      const started = performance.now();
+      const res = await fetch(path, options);
+      logApi(method, path, res.status, Math.round(performance.now() - started));
+      return res;
+    }
 
     const els = {
       question: document.getElementById("question"),
@@ -650,7 +714,7 @@
     }
 
     async function fetchExamplePayload(url) {
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await apiFetch(url, { cache: "no-store" });
       if (!res.ok) return null;
       const ct = (res.headers.get("content-type") || "").toLowerCase();
       if (!ct.includes("json")) return null;
@@ -689,7 +753,7 @@
 
     async function checkHealth() {
       try {
-        const res = await fetch("/health");
+        const res = await apiFetch("/health");
         if (!res.ok) throw new Error();
         const data = await res.json();
         els.statusPill.textContent = "API online";
@@ -765,7 +829,7 @@
       const started = performance.now();
 
       try {
-        const response = await fetch("/ask", {
+        const response = await apiFetch("/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question }),
